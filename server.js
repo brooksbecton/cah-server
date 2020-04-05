@@ -911,7 +911,7 @@ var cah = {
     });
     var sortedWinningCards = (0, _sortBy.default)(winningCards, "winningCardCount");
     var leaderWinningCard = sortedWinningCards[0];
-    return leaderWinningCard.winningCardCount >= 3 ? true : undefined;
+    return leaderWinningCard ? leaderWinningCard.winningCardCount >= 3 ? true : undefined : undefined;
   }
 };
 exports.cah = cah;
