@@ -429,7 +429,9 @@ var defaultState = {
   playedCards: [],
   playerID: null,
   whiteCards: _cards.cards.whiteCards,
-  winnerCards: []
+  winnerCards: [],
+  gameOver: false,
+  winningCardAmount: 10
 };
 exports.defaultState = defaultState;
 },{"../constants/cards":"taub"}],"vNg5":[function(require,module,exports) {
@@ -909,9 +911,12 @@ var cah = {
         winningCardCount: groupedWinnerCards[playerId].length
       };
     });
-    var sortedWinningCards = (0, _sortBy.default)(winningCards, "winningCardCount");
+    var sortedWinningCards = (0, _sortBy.default)(winningCards, "winningCardCount").reverse();
     var leaderWinningCard = sortedWinningCards[0];
-    return leaderWinningCard ? leaderWinningCard.winningCardCount >= 3 ? true : undefined : undefined;
+    return leaderWinningCard ? leaderWinningCard.winningCardCount >= G.winningCardAmount ? true : undefined : undefined;
+  },
+  onEnd: function (G) {
+    G.gameOver = true;
   }
 };
 exports.cah = cah;
