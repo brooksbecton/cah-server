@@ -416,7 +416,18 @@ exports.defaultState = void 0;
 var _cards = require("../constants/cards");
 
 var defaultState = {
-  blackCards: _cards.cards.blackCards,
+  isShowcasing: false,
+
+  /**
+   * @TODO
+   * I think all the logic works with picks > 1, but I need to
+   * think about the UX around picking cards from the czar point of view.
+   *
+   * And how showcasing would work
+   */
+  blackCards: _cards.cards.blackCards.filter(function (card) {
+    return card.pick === 1;
+  }),
   cardLimit: 10,
   currentBlackCard: {
     pick: 0,
@@ -649,7 +660,102 @@ var draw = {
   next: "play"
 };
 exports.draw = draw;
-},{"../../utils/drawCard":"pjnZ"}],"LRw8":[function(require,module,exports) {
+},{"../../utils/drawCard":"pjnZ"}],"Gck9":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.vote = exports.voteCard = void 0;
+
+var _core = require("boardgame.io/core");
+
+var __spreadArrays = void 0 && (void 0).__spreadArrays || function () {
+  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+  return r;
+};
+
+var voteCard = function (G, ctx, card) {
+  var _a;
+
+  G.winnerCards = __spreadArrays((_a = G) === null || _a === void 0 ? void 0 : _a.winnerCards, [card]);
+  G.isShowcasing = true;
+};
+
+exports.voteCard = voteCard;
+var vote = {
+  turn: {
+    activePlayers: _core.ActivePlayers.ALL
+  },
+  moves: {
+    voteCard: voteCard
+  },
+  endIf: function (G) {
+    var _a;
+
+    return ((_a = G) === null || _a === void 0 ? void 0 : _a.isShowcasing) === true;
+  },
+  next: "showcase"
+};
+exports.vote = vote;
+},{}],"gb2d":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.play = exports.playCard = void 0;
+
+var _core = require("boardgame.io/core");
+
+var __spreadArrays = void 0 && (void 0).__spreadArrays || function () {
+  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+  return r;
+};
+
+var playCard = function (G, ctx, card) {
+  var _a, _b, _c, _d, _e; // Don't allow czar to play card on their turn
+
+
+  if (Number(card.playerID) !== Number((_a = G) === null || _a === void 0 ? void 0 : _a.currentCzarID)) {
+    var cardIndex = (_b = G) === null || _b === void 0 ? void 0 : _b.hand.map(function (_a) {
+      var text = _a.text;
+      return text;
+    }).indexOf(card.text); // Removing played card from hand
+
+    var newHand = __spreadArrays((_c = G) === null || _c === void 0 ? void 0 : _c.hand.slice(0, cardIndex), (_d = G) === null || _d === void 0 ? void 0 : _d.hand.slice(cardIndex + 1));
+
+    G.playedCards = __spreadArrays((_e = G) === null || _e === void 0 ? void 0 : _e.playedCards, [card]);
+    G.hand = newHand;
+  }
+};
+
+exports.playCard = playCard;
+
+var endIf = function (G, ctx) {
+  var _a, _b;
+
+  return ((_a = G) === null || _a === void 0 ? void 0 : _a.playedCards.length) === (ctx.numPlayers - 1) * ((_b = G) === null || _b === void 0 ? void 0 : _b.currentBlackCard.pick);
+};
+
+var play = {
+  turn: {
+    activePlayers: _core.ActivePlayers.ALL
+  },
+  moves: {
+    playCard: playCard
+  },
+  endIf: endIf,
+  next: "vote"
+};
+exports.play = play;
+},{}],"LRw8":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -717,13 +823,13 @@ function replenishPlayersCards(G) {
     hand: newHand
   });
 }
-},{"../utils/drawCard":"pjnZ"}],"Gck9":[function(require,module,exports) {
+},{"../utils/drawCard":"pjnZ"}],"f38u":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.vote = exports.voteCard = void 0;
+exports.showcase = exports.endShowCase = void 0;
 
 var _core = require("boardgame.io/core");
 
@@ -745,105 +851,41 @@ var __assign = void 0 && (void 0).__assign || function () {
   return __assign.apply(this, arguments);
 };
 
-var __spreadArrays = void 0 && (void 0).__spreadArrays || function () {
-  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-
-  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
-
-  return r;
+var endShowCase = function (G) {
+  G.isShowcasing = false;
 };
 
-var voteCard = function (G, ctx, card) {
-  var _a, _b;
-
-  G.currentCzarID = (((_a = G) === null || _a === void 0 ? void 0 : _a.currentCzarID) + 1) % ctx.numPlayers;
-  G.winnerCards = __spreadArrays((_b = G) === null || _b === void 0 ? void 0 : _b.winnerCards, [card]);
-  G.playedCards = [];
-};
-
-exports.voteCard = voteCard;
-var vote = {
+exports.endShowCase = endShowCase;
+var showcase = {
   turn: {
     activePlayers: _core.ActivePlayers.ALL
   },
   moves: {
-    voteCard: voteCard
+    endShowCase: endShowCase
   },
   endIf: function (G) {
     var _a;
 
-    return ((_a = G) === null || _a === void 0 ? void 0 : _a.playedCards.length) === 0;
+    return ((_a = G) === null || _a === void 0 ? void 0 : _a.isShowcasing) === false;
   },
-  onEnd: function (G) {
-    var _a;
+  onEnd: function (G, ctx) {
+    var _a, _b;
 
-    var _b = (0, _drawCard.drawCard)((_a = G) === null || _a === void 0 ? void 0 : _a.blackCards),
-        card = _b.card,
-        deck = _b.deck;
+    var _c = (0, _drawCard.drawCard)((_a = G) === null || _a === void 0 ? void 0 : _a.blackCards),
+        card = _c.card,
+        deck = _c.deck;
 
     return __assign(__assign(__assign({}, G), (0, _replenishPlayersCards.replenishPlayersCards)(G)), {
       blackCards: deck,
-      currentBlackCard: card
+      currentBlackCard: card,
+      playedCards: [],
+      currentCzarID: (((_b = G) === null || _b === void 0 ? void 0 : _b.currentCzarID) + 1) % ctx.numPlayers
     });
   },
   next: "draw"
 };
-exports.vote = vote;
-},{"../replenishPlayersCards":"LRw8","../../utils/drawCard":"pjnZ"}],"gb2d":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.play = exports.playCard = void 0;
-
-var _core = require("boardgame.io/core");
-
-var __spreadArrays = void 0 && (void 0).__spreadArrays || function () {
-  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-
-  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
-
-  return r;
-};
-
-var playCard = function (G, ctx, card) {
-  var _a, _b, _c, _d, _e; // Don't allow czar to play card on their turn
-
-
-  if (Number(card.playerID) !== Number((_a = G) === null || _a === void 0 ? void 0 : _a.currentCzarID)) {
-    var cardIndex = (_b = G) === null || _b === void 0 ? void 0 : _b.hand.map(function (_a) {
-      var text = _a.text;
-      return text;
-    }).indexOf(card.text); // Removing played card from hand
-
-    var newHand = __spreadArrays((_c = G) === null || _c === void 0 ? void 0 : _c.hand.slice(0, cardIndex), (_d = G) === null || _d === void 0 ? void 0 : _d.hand.slice(cardIndex + 1));
-
-    G.playedCards = __spreadArrays((_e = G) === null || _e === void 0 ? void 0 : _e.playedCards, [card]);
-    G.hand = newHand;
-  }
-};
-
-exports.playCard = playCard;
-
-var endIf = function (G, ctx) {
-  var _a, _b;
-
-  return ((_a = G) === null || _a === void 0 ? void 0 : _a.playedCards.length) === (ctx.numPlayers - 1) * ((_b = G) === null || _b === void 0 ? void 0 : _b.currentBlackCard.pick);
-};
-
-var play = {
-  turn: {
-    activePlayers: _core.ActivePlayers.ALL
-  },
-  moves: {
-    playCard: playCard
-  },
-  endIf: endIf,
-  next: "vote"
-};
-exports.play = play;
-},{}],"NVEX":[function(require,module,exports) {
+exports.showcase = showcase;
+},{"../replenishPlayersCards":"LRw8","../../utils/drawCard":"pjnZ"}],"NVEX":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -860,6 +902,8 @@ var _draw = require("./phases/draw");
 var _vote = require("./phases/vote");
 
 var _play = require("./phases/play");
+
+var _showcase = require("./phases/showcase");
 
 var _groupBy = _interopRequireDefault(require("lodash/groupBy"));
 
@@ -892,14 +936,16 @@ var cah = {
   moves: {
     startGame: _setup.startGame,
     drawCard: _draw.drawCard,
+    playCard: _play.playCard,
     voteCard: _vote.voteCard,
-    playCard: _play.playCard
+    endShowCase: _showcase.endShowCase
   },
   phases: {
     setup: _setup.setup,
     draw: _draw.draw,
     play: _play.play,
-    vote: _vote.vote
+    vote: _vote.vote,
+    showcase: _showcase.showcase
   },
   endIf: function (G) {
     var _a;
@@ -922,7 +968,7 @@ var cah = {
 exports.cah = cah;
 var _default = cah;
 exports.default = _default;
-},{"./defaultState":"mBUZ","./phases/setup":"vNg5","./phases/draw":"k4xJ","./phases/vote":"Gck9","./phases/play":"gb2d"}],"eMEv":[function(require,module,exports) {
+},{"./defaultState":"mBUZ","./phases/setup":"vNg5","./phases/draw":"k4xJ","./phases/vote":"Gck9","./phases/play":"gb2d","./phases/showcase":"f38u"}],"eMEv":[function(require,module,exports) {
 "use strict";
 
 var _server = require("boardgame.io/server");
