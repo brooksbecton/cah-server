@@ -973,9 +973,15 @@ exports.default = _default;
 
 var _server = require("boardgame.io/server");
 
+var _dotenv = _interopRequireDefault(require("dotenv"));
+
+var Sentry = _interopRequireWildcard(require("@sentry/node"));
+
 var _game = require("./../client/src/game/game");
 
-var _dotenv = _interopRequireDefault(require("dotenv"));
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -986,6 +992,9 @@ const server = (0, _server.Server)({
 _dotenv.default.config();
 
 const port = Number(process.env.PORT);
+Sentry.init({
+  dsn: 'https://b7c5fc6639b54250b329c849d3ddf7d2@o397091.ingest.sentry.io/5251277'
+});
 server.run({
   port
 });
